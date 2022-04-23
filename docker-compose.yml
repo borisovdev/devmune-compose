@@ -1,0 +1,56 @@
+networks:
+  blockchain:
+    driver: bridge
+
+  # web2:
+  #   driver: bridge
+
+volumes:
+  chainlink-node-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./data/chainlink-node"
+      o: bind
+
+services:
+  eth-blockchain:
+    image: trufflesuite/ganache-cli:v6.12.2
+    networks:
+      - blockchain
+    volumes:
+      - ./data/eth-blockchain/accounts.json:/data/ganache/accounts.json
+    command: --port 8545 --chainId 1337 --forkCacheSize 268435456 --debug --verbose --mnemonic "stereo consider quality wild fat farm symptom bundle laundry side one lemon"
+    container_name: remune_eth_blockhain
+
+  db-chainlink-node:
+    image: postgres:14.2-alpine
+    env_file:
+      - ./services/db-chainlink-node/.env
+    networks:
+      - blockchain
+    container_name: remune_db_chainlink_node
+
+  chainlink-node:
+    image: smartcontract/chainlink:1.3.0
+    env_file:
+      - ./services/chainlink-node/.env
+    volumes:
+      - ./services/chainlink-node/.password:/chainlink/.password
+      - ./services/chainlink-node/.api:/chainlink/.api
+      - chainlink-node-data:/chainlink
+    networks:
+      - blockchain
+    command: local node -p /chainlink/.password -a /chainlink/.api
+    container_name: remune_chainlink_node
+
+  # contracts-workbench:
+  #   image: ./services/contracts-workbench
+  #   networks:
+  #     - blockchain
+
+  # node-controller:
+  #   image: ./services/node-controller
+  #   networks:
+  #     - blockchain
+  #     - web2

@@ -1,0 +1,2 @@
+data/chainlink-node/*
+!data/chainlink-node/.keepdir
