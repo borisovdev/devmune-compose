@@ -1,0 +1,11 @@
+services:
+  eth-blockchain:
+    ports:
+      - 8545:8545
+
+  chainlink-node:
+    env_file:
+        - ./services/chainlink-node/.env.local
+    ports:
+      - 6688:6688
+    restart: on-failure

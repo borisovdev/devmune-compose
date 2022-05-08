@@ -1,2 +1,5 @@
 data/chainlink-node/*
 !data/chainlink-node/.keepdir
+.env.dev
+data/eth-blockchain/accounts/*
+!data/eth-blockchain/accounts/.keepdir

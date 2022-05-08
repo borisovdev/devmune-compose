@@ -1,4 +1,0 @@
-services:
-
-  chainlink-node:
-    restart: on-failure
