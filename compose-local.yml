@@ -9,3 +9,10 @@ services:
     ports:
       - 6688:6688
     restart: on-failure
+    
+  node-controller:
+    environment:
+      - PORT=3001
+      - WEB3_CONNECTION_URL=ws://eth-blockchain:8545
+    ports:
+      - 3001:3001

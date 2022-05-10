@@ -1,6 +1,9 @@
 networks:
   blockchain:
     driver: bridge
+  
+  web:
+    driver: bridge
 
 volumes:
   chainlink-node-data:
@@ -25,7 +28,7 @@ services:
     volumes:
       - ./data/eth-blockchain/accounts/accounts.json:/app/accounts.json
     command: --port 8545 --chainId 1337 --forkCacheSize 268435456 --debug --verbose --mnemonic "$HD_WALLET_MNEMONIC" --account_keys_path accounts.json
-    container_name: remune_eth_blockhain
+    container_name: devmune_eth_blockhain
 
   db-chainlink-node:
     image: postgres:14.2-alpine
@@ -33,7 +36,7 @@ services:
       - ./services/db-chainlink-node/.env
     networks:
       - blockchain
-    container_name: remune_db_chainlink_node
+    container_name: devmune_db_chainlink_node
 
   chainlink-node:
     image: smartcontract/chainlink:1.1.1
@@ -44,7 +47,16 @@ services:
     networks:
       - blockchain
     command: local node -p /chainlink/.password -a /chainlink/.api
-    container_name: remune_chainlink_node
+    container_name: devmune_chainlink_node
+
+  node-controller:
+    build:
+      context: ./services/node-controller
+    image: node-controller:latest
+    networks:
+      - blockchain
+      - web
+    container_name: devmune_node_controller
 
   contracts-workbench:
     build:
@@ -53,4 +65,4 @@ services:
     networks:
       - blockchain
     command: tail /dev/null -f
-    container_name: remune_contracts_workbench
+    container_name: devmune_contracts_workbench
