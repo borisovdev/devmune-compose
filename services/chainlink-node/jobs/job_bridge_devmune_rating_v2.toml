@@ -1,0 +1,98 @@
+name = "Devmune Rating (Github)"
+type = "directrequest"
+schemaVersion = 1
+externalJobID = "51226573-5ece-4bcb-929b-66b0d1ee7432"
+maxTaskDuration = "0s"
+# minContractPaymentLinkJuels = ""
+contractAddress = "0x0f77366B2e7342Bf05772bc286B75Ccc72c81303"
+minIncomingConfirmations = 0
+observationSource = """
+  decode_log [
+    type="ethabidecodelog"
+    abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
+    data="$(jobRun.logData)"
+    topics="$(jobRun.logTopics)"
+  ]
+
+  decode_cbor [
+    type="cborparse"
+    data="$(decode_log.data)"
+  ]
+
+  decode_log -> decode_cbor
+
+  decode_cbor -> fetch_rating
+
+  fetch_rating [
+    type="bridge"
+    name="devmune-ratings-github"
+    requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": { \\"repo\\": $(decode_cbor.repo), \\"repo_owner\\": $(decode_cbor.repo_owner), \\"records_limit\\": $(decode_cbor.records_limit), \\"from_date_time\\": $(decode_cbor.from_date_time), \\"users_in_rating_limit\\": $(decode_cbor.users_in_rating_limit)}}" 
+  ]
+
+  parse_first_place [
+    type="jsonparse"
+    path="data,0,user_login"
+    data="$(fetch_rating)"
+  ]
+  parse_first_place_weight [
+    type="jsonparse"
+    path="data,0,weight"
+    data="$(fetch_rating)"
+  ]
+  fetch_rating -> parse_first_place 
+  fetch_rating -> parse_first_place_weight 
+
+
+  parse_second_place [
+    type="jsonparse"
+    path="data,1,user_login"
+    data="$(fetch_rating)"
+  ]
+  parse_second_place_weight [
+    type="jsonparse"
+    path="data,1,weight"
+    data="$(fetch_rating)"
+  ]
+  fetch_rating -> parse_second_place
+  fetch_rating -> parse_second_place_weight
+
+  parse_third_place [
+    type="jsonparse"
+    path="data,2,user_login"
+    data="$(fetch_rating)"
+  ]
+  parse_third_place_weight [
+    type="jsonparse"
+    path="data,2,weight"
+    data="$(fetch_rating)"
+  ]
+  fetch_rating -> parse_third_place
+  fetch_rating -> parse_third_place_weight
+  
+  parse_first_place -> encode_rating_data
+  parse_first_place_weight -> encode_rating_data
+  parse_second_place -> encode_rating_data
+  parse_second_place_weight -> encode_rating_data
+  parse_third_place -> encode_rating_data
+  parse_third_place_weight -> encode_rating_data
+
+  encode_rating_data [
+    type="ethabiencode"
+    abi="(bytes32 requestId, bytes firstPlace, uint256 firstWeight, bytes secondPlace, uint256 secondWeight, bytes thirdPlace, uint256 thirdWeight)"
+    data="{\\"requestId\\": $(decode_log.requestId), \\"firstPlace\\": $(parse_first_place), \\"firstWeight\\": $(parse_first_place_weight), \\"secondPlace\\": $(parse_second_place), \\"secondWeight\\": $(parse_second_place_weight), \\"thirdPlace\\": $(parse_third_place), \\"thirdWeight\\": $(parse_third_place_weight)}"
+  ]
+
+  encode_tx  [
+    type="ethabiencode"
+    abi="fulfillOracleRequest2(bytes32 requestId, uint256 payment, address callbackAddress, bytes4 callbackFunctionId, uint256 expiration, bytes calldata data)"
+    data="{\\"requestId\\": $(decode_log.requestId), \\"payment\\":   $(decode_log.payment), \\"callbackAddress\\": $(decode_log.callbackAddr), \\"callbackFunctionId\\": $(decode_log.callbackFunctionId), \\"expiration\\": $(decode_log.cancelExpiration), \\"data\\": $(encode_rating_data)}"
+  ]
+
+  submit_tx [
+    type="ethtx"
+    to="0x0f77366B2e7342Bf05772bc286B75Ccc72c81303"
+    data="$(encode_tx)"
+  ]
+
+  encode_rating_data -> encode_tx -> submit_tx
+"""

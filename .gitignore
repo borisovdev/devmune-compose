@@ -5,3 +5,5 @@ data/eth-blockchain/accounts/*
 !data/eth-blockchain/accounts/.keepdir
 data/eth-blockchain/blockchain/**/*
 data/db-chainlink-node/**/*
+certs/*
+!certs/.keepdir

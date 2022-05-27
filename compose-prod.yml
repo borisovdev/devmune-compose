@@ -1,0 +1,30 @@
+volumes:
+  nginx_certs:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./certs"
+      o: bind
+
+  nginx_templates:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./templates/prod"
+      o: bind
+
+services:
+  node-controller:
+    environment:
+      - PORT=3000
+      - WEB3_CONNECTION_URL=wss://kovan.infura.io/ws/v3/8d5244b198104f029fd1536b306f610a
+    ports:
+      - 3000:3000
+
+  devmune_ui:
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - nginx_templates:/etc/nginx/templates
+      - nginx_certs:/etc/nginx/certs

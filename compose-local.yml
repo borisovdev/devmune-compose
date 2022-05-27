@@ -1,14 +1,77 @@
+volumes:
+  chainlink-node-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./data/chainlink-node"
+      o: bind
+
+  eth_blockchain_accounts_debug:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./data/eth-blockchain/accounts"
+      o: bind
+
+  blockchain_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./data/eth-blockchain/blockchain"
+      o: bind
+
+  db_chainlink_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./data/db-chainlink-node"
+      o: bind
+
+  nginx_templates:
+    driver: local
+    driver_opts:
+      type: none
+      device: "./templates/local"
+      o: bind
+
 services:
   eth-blockchain:
+    image: trufflesuite/ganache-cli:v6.12.2
+    networks:
+      - blockchain
+    volumes:
+      - ./data/eth-blockchain/accounts/accounts.json:/app/accounts.json
+      - blockchain_data:/data/ganache
+    command: --port 8545 --chainId 1337 --forkCacheSize 268435456 --debug --verbose --mnemonic "$HD_WALLET_MNEMONIC" --account_keys_path accounts.json --db /data/ganache
     ports:
       - 8545:8545
+    container_name: devmune_eth_blockhain
+
+  db-chainlink-node:
+    image: postgres:14.2-alpine
+    env_file:
+      - ./services/db-chainlink-node/.env
+    volumes:
+      - db_chainlink_data:/var/lib/postgresql/data
+    networks:
+      - blockchain
+    container_name: devmune_db_chainlink_node
 
   chainlink-node:
+    image: smartcontract/chainlink:1.1.1
+    volumes:
+      - ./services/chainlink-node/.password:/chainlink/.password
+      - ./services/chainlink-node/.api:/chainlink/.api
+      - chainlink-node-data:/chainlink
+    networks:
+      - blockchain
     env_file:
         - ./services/chainlink-node/.env.local
     ports:
       - 6688:6688
     restart: on-failure
+    command: local node -p /chainlink/.password -a /chainlink/.api
+    container_name: devmune_chainlink_node
     
   node-controller:
     environment:
@@ -16,3 +79,9 @@ services:
       - WEB3_CONNECTION_URL=ws://eth-blockchain:8545
     ports:
       - 3001:3001
+
+  devmune_ui:
+    ports:
+      - 8080:8080 
+    volumes:
+      - nginx_templates:/etc/nginx/templates

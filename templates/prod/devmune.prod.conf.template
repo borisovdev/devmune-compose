@@ -1,0 +1,36 @@
+log_format main '$remote_addr - $remote_user [$time_local] "$request" ' '--> "$request_filename" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for"';
+
+server {
+  listen 80;
+  listen [::]:80;
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+server {
+  listen 443 ssl;
+  server_name ${DEVMUNE_HOST} www.${DEVMUNE_HOST};
+
+  root /var/www/devmune-ui/dist;
+  index index.html
+
+  ssl_certificate /etc/nginx/certs/fullchain.pem;
+  ssl_certificate_key /etc/nginx/certs/privkey.pem;
+  
+  access_log /var/log/nginx/access.log main;
+  error_log /var/log/nginx/error.log;
+
+  client_max_body_size 200M;
+  proxy_read_timeout 300;
+  proxy_send_timeout 300;
+  proxy_connect_timeout 300;
+  client_header_timeout 300;
+  client_body_timeout 300;
+  send_timeout 300;
+
+  location / {
+    try_files $uri $uri/ /index.html
+  }
+}
