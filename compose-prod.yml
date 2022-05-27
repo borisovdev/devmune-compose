@@ -3,14 +3,14 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: "./certs"
+      device: "/usr/local/share/devmune-compose/certs"
       o: bind
 
   nginx_templates:
     driver: local
     driver_opts:
       type: none
-      device: "./templates/prod"
+      device: "/usr/local/share/devmune-compose/templates/prod"
       o: bind
 
 services:
