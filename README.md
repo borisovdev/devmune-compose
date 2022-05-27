@@ -1,20 +1,61 @@
-# Remune compose
+# Devmune compose
 
-## Startup
+## Step by step
+
+### Create required files
+
+#### Prod
+
+- ./.env.prod
+- ./services/devmune-ui/.env
+
+Place your SSL certs files (fullchain.pem && privkey.pem) to **./certs**
 
 ### Build services
+
+#### Local
 
 ```sh
 docker-compose --file ./docker-compose.yml --file ./compose-local.yml --env-file ./.env.local build
 ```
 
+#### Prod
+
+```sh
+docker-compose --file ./docker-compose.yml --file ./compose-prod.yml --env-file ./.env.prod build
+```
+
 ### Up services
+
+#### Local
 
 ```sh
 docker-compose --file ./docker-compose.yml --file ./compose-local.yml --env-file ./.env.local up --remove-orphans
 ```
 
-## Setup for Localnet
+#### Prod
+
+```sh
+docker-compose --file ./docker-compose.yml --file ./compose-prod.yml --env-file ./.env.prod up --remove-orphans
+```
+
+### Integrate with chainlink node
+
+#### Prod
+
+Add new bridge, named as **devmune-ratings-github**.  
+
+CAUTION! Replace contract addresses from devmune job to your **operator contract address**
+
+Add new job to your chainlink node from dir **./services/chainlink-node/jobs/job_bridge_devmune_rating_v2.toml**
+
+Fund your chainlink node account by ETH.  
+Fund your operator contract by LINK.
+Fund your DevmuneRating contract by LINK.
+
+That's all!
+
+## DEV: Setup for Localnet
 
 ### Chainlink node
 
