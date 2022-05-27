@@ -19,7 +19,8 @@ services:
     build:
       context: ./services/devmune-ui
     image: devmune-ui:latest
-    command: tail -f /dev/null
+    environment:
+      - DEVMUNE_HOST=${DEVMUNE_HOST}
     networks:
       - blockchain
       - web
