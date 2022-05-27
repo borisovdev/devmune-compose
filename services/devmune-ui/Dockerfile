@@ -18,6 +18,8 @@ WORKDIR /var/www/devmune-ui
 
 COPY --from=app_layer /usr/local/remune/devmune-ui/ /var/www/devmune-ui/
 
+RUN rm /etc/nginx/default.conf
+
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
 
 CMD ["nginx", "-g", "daemon off;"]

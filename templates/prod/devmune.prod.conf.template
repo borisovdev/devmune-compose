@@ -1,4 +1,4 @@
-log_format main '$remote_addr - $remote_user [$time_local] "$request" ' '--> "$request_filename" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for"';
+log_format adv_log '$remote_addr - $remote_user [$time_local] "$request" ' '--> "$request_filename" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for"';
 
 server {
   listen 80;
@@ -14,12 +14,12 @@ server {
   server_name ${DEVMUNE_HOST} www.${DEVMUNE_HOST};
 
   root /var/www/devmune-ui/dist;
-  index index.html
+  index index.html;
 
   ssl_certificate /etc/nginx/certs/fullchain.pem;
   ssl_certificate_key /etc/nginx/certs/privkey.pem;
   
-  access_log /var/log/nginx/access.log main;
+  access_log /var/log/nginx/access.log adv_log;
   error_log /var/log/nginx/error.log;
 
   client_max_body_size 200M;
@@ -31,6 +31,6 @@ server {
   send_timeout 300;
 
   location / {
-    try_files $uri $uri/ /index.html
+    try_files $uri $uri/ /index.html;
   }
 }
